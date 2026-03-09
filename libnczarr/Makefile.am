@@ -11,7 +11,7 @@ include $(top_srcdir)/lib_flags.am
 AM_CPPFLAGS += -D_LARGEFILE_SOURCE
 AM_CPPFLAGS += -I$(top_srcdir)/libsrc4 -I$(top_srcdir)/libncpoco
 libnczarr_la_CPPFLAGS = ${AM_CPPFLAGS}
-AM_CXXFLAGS = 
+AM_CXXFLAGS =
 libnczarr_la_LIBADD =
 libnczarr_la_LDFLAGS =
 
@@ -21,7 +21,7 @@ libnczarr_la_LDFLAGS =
 DISTCLEANFILES =
 MAINTAINERCLEANFILES =
 CLEANFILES =
-EXTRA_DIST = 
+EXTRA_DIST =
 LDADD=
 
 # This is our output. The ZARR convenience library.
@@ -45,6 +45,7 @@ zmap.c \
 zmap_file.c \
 zmetadata.c \
 zmetadata2.c\
+zmetadata3.c\
 zodom.c \
 zopen.c \
 zprov.c \
@@ -69,7 +70,7 @@ zfilter.h \
 zdebug.h
 
 if NETCDF_ENABLE_NCZARR_ZIP
-libnczarr_la_SOURCES += zmap_zip.c 
+libnczarr_la_SOURCES += zmap_zip.c
 endif
 
 if NETCDF_ENABLE_NCZARR_FILTERS
@@ -84,7 +85,7 @@ endif
 endif
 
 # For now, ignore these
-IGNORED=ztype.c 
+IGNORED=ztype.c
 
 # Package this for cmake build.
 EXTRA_DIST += CMakeLists.txt

@@ -25,6 +25,7 @@ zmap.c
 zmap_file.c
 zmetadata.c
 zmetadata2.c
+zmetadata3.c
 zodom.c
 zopen.c
 zprov.c
@@ -57,7 +58,7 @@ if(NETCDF_ENABLE_NCZARR_FILTERS)
 set(libnczarr_SOURCES ${libnczarr_SOURCES} zfilter.c zplugins.c)
 endif()
 
-if(NETCDF_ENABLE_S3) 
+if(NETCDF_ENABLE_S3)
     set(libnczarr_SOURCES ${libnczarr_SOURCES} zmap_s3sdk.c)
 endif()
 

@@ -115,17 +115,23 @@ int NCZMD_set_metadata_handler(NCZ_FILE_INFO_T *zfile) {
     if (!use_consolidated)
         return NC_NOERR;
 
+    int zarrVersion = 2;
     if (NCZ_downloadjson(zfile->map, Z2METADATA, &jcsl) || jcsl == NULL) {
-        nclog(NCLOGNOTE, "Dataset not consolidated! Doing so will improve performance");
-        return NC_NOERR;
+        zarrVersion = 3;
+        if (NCZ_downloadjson(zfile->map, Z3METADATA, &jcsl) || jcsl == NULL) {
+            nclog(NCLOGNOTE, "Dataset not consolidated! Doing so will improve performance");
+            return NC_NOERR;
+        }
     }
 
-    if (NCZ_csl_metadata_handler2->validate_consolidated(jcsl) != NC_NOERR) {
+    int status = (zarrVersion == 2) ? NCZ_csl_metadata_handler2->validate_consolidated(jcsl) :
+                                      NCZ_csl_metadata_handler3->validate_consolidated(jcsl);
+    if (status != NC_NOERR) {
         nclog(NCLOGWARN,"Consolidated metadata is invalid, ignoring it!");
         return NC_EZARRMETA;
     }
 
-    zfile->metadata = *NCZ_csl_metadata_handler2;
+    zfile->metadata = (zarrVersion == 2) ? *NCZ_csl_metadata_handler2 : *NCZ_csl_metadata_handler3;
     zfile->metadata.jcsl = jcsl;
     return NC_NOERR;
 }

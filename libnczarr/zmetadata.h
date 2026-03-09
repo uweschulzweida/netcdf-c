@@ -41,6 +41,9 @@ extern "C"
 #define Z2METADATA "/.zmetadata"
 #define ZARRFORMAT2 2
 
+#define Z3METADATA "/zarr.json"
+#define ZARRFORMAT3 3
+
 /* The name of the env var for controlling .zmetadata use*/
 #define NCZARR_CONSOLIDATED_KEY_ENV "NCZARR_METADATA_CONSOLIDATED_KEY"
 #define NCZARR_CONSOLIDATED_ENV "NCZARR_CONSOLIDATED"
@@ -72,6 +75,9 @@ typedef struct NCZ_Metadata
 
 extern const NCZ_Metadata *NCZ_metadata_handler2;
 extern const NCZ_Metadata *NCZ_csl_metadata_handler2;
+
+extern const NCZ_Metadata *NCZ_metadata_handler3;
+extern const NCZ_Metadata *NCZ_csl_metadata_handler3;
 
 /// @brief Sets the metadata handler for the given zarr file based on
 /// 	environment variables, file creation mode, and dataset contents.
