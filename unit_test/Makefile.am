@@ -41,13 +41,17 @@ endif
 if USE_HDF5
 check_PROGRAMS += tst_nc4internal tst_reclaim
 TESTS += tst_nc4internal
+if NETCDF_BUILD_UTILITIES
 TESTS += run_reclaim_tests.sh
+endif # NETCDF_BUILD_UTILITIES
 endif # USE_HDF5
 
 if USE_HDF5
 if NETCDF_ENABLE_NCZARR_FILTERS
+if NETCDF_BUILD_UTILITIES
 check_PROGRAMS += tst_pluginpaths
 TESTS += run_pluginpaths.sh run_dfaltpluginpath.sh
+endif
 endif
 endif
 
