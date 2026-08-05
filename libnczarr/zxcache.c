@@ -712,7 +712,35 @@ get_chunk(NCZChunkCache* cache, NCZCacheEntry* entry)
 	/* Apply the filter chain to get the unfiltered data */
 	filtered = entry->data;
 	entry->data = NULL;
-	if((stat = NCZ_applyfilterchain(file,var,filterchain,entry->size,filtered,&unflen,&unfiltered,!ENCODING))) goto done;
+        // zarr3 shards
+        if(var->num_chunks_in_shard) {
+          size_t numChunks = (size_t)var->num_chunks_in_shard;
+          unflen = 0;
+          size_t chunkSize = var->type_info->size * var->chunksize_in_shard;
+          unfiltered = malloc(numChunks * chunkSize);
+          size_t indexSize = (16 * numChunks) + 4;
+          size_t indexOffset = entry->size - indexSize;
+          char *shardingIndex = (char*)filtered + indexOffset;
+          for (size_t i = 0; i < numChunks; i++)
+          {
+            size_t unfChunkLen = 0;
+            void* unfilteredChunk = NULL;
+            size_t offset = *((size_t*) (shardingIndex + (i * 16)));
+            size_t nbytes = *((size_t*) (shardingIndex + (i * 16) + 8));
+            if (offset+nbytes > indexOffset) break;
+            void* filteredChunk = malloc(nbytes);
+            memcpy(filteredChunk, filtered + offset, nbytes);
+            if((stat = NCZ_applyfilterchain(file,var,filterchain,nbytes,filteredChunk,&unfChunkLen,&unfilteredChunk,!ENCODING))) goto done;
+            memcpy(unfiltered + (i * chunkSize), unfilteredChunk, chunkSize);
+            nullfree(unfilteredChunk);
+            unflen += unfChunkLen;
+          }
+          if (filtered != NULL) nullfree(filtered);
+        }
+        else
+        {
+          if((stat = NCZ_applyfilterchain(file,var,filterchain,entry->size,filtered,&unflen,&unfiltered,!ENCODING))) goto done;
+        }
 	/* Fix up the cache entry */
 	entry->data = unfiltered;
 	entry->size = unflen;

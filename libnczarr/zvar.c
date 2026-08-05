@@ -287,6 +287,9 @@ var->type_info->rc++;
     /* Indicate we do not have quantizer yet */
     var->quantize_mode = 0;
 
+    var->num_chunks_in_shard = 0;
+    var->chunksize_in_shard = 0;
+
     /* should we use contiguous or chunked storage. */
     var->storage = (zvar->scalar?NC_CONTIGUOUS:NC_CHUNKED);
 

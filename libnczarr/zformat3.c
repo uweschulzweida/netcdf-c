@@ -559,6 +559,44 @@ ZF3_decode_var(NC_FILE_INFO_T* file, NC_VAR_INFO_T* var, struct ZOBJ* zobj, NCli
     if((stat = NCZ_filter_initialize())) goto done;
 #endif
     NCJcheck(NCJdictget(jvar,"codecs",(NCjson**)&jcodecs));
+    // zarr3 shards
+    size64_t* chunksInShard = NULL;
+    for (size_t i = 0; i < NCJarraylength(jcodecs); i++) {
+        const NCjson* jcodec = NCJith(jcodecs, i);
+        if (NCJsort(jcodec) != NCJ_DICT || NCJ_OK != NCJdictget(jcodec,"name",(NCjson**)&jvalue) || jvalue == NULL) {
+            nclog(NCLOGWARN, "Ignoring invalid codec configuration in zarr array: %s", NCJstring(jcodec));
+            continue;
+        }
+        if (strcmp("sharding_indexed", NCJstring(jvalue)) == 0) {
+            if ((NC_NOERR == extract_named_config(jcodec, "configuration", &jvalue))) {
+               NCJdictget(jvalue, "chunk_shape", (NCjson**)&jvalue);
+               if (jvalue == NULL || NCJsort(jvalue)!=NCJ_ARRAY || NCJarraylength(jvalue) != zarr_rank) { stat = NC_ENOTZARR; break; }
+               if ((chunksInShard = (size64_t*)calloc(zarr_rank,sizeof(size64_t)))==NULL) { stat = NC_ENOMEM; break; }
+               if ((stat=NCZ_decodesizet64vec(jvalue, &zarr_rank, chunksInShard))) break;
+            }
+
+            if ((NC_NOERR == extract_named_config(jcodec, "configuration", &jvalue))) {
+                NCJdictget(jvalue, "codecs", (NCjson**)&jvalue);
+                if (jvalue == NULL || NCJsort(jvalue) != NCJ_ARRAY || NCJarraylength(jvalue) == 0) {
+                    nclog(NCLOGERR, "Ignoring invalid sharding_indexed codec configuration in zarr array: %s", NCJstring(jcodec));
+                    continue;
+                }
+                jcodecs = jvalue;
+                break;
+            }
+        }
+    }
+    if (chunksInShard != NULL) {
+        size_t chunksizeInShard = 1;
+        for (size_t i = 0; i < zarr_rank; i++) { chunksizeInShard *= chunksInShard[i]; }
+        int numChunksInShard = 1;
+        for (size_t i = 0; i < zarr_rank; i++) { numChunksInShard *= chunks[i] / chunksInShard[i]; }
+        free(chunksInShard);
+        chunksInShard = NULL;
+        var->num_chunks_in_shard = numChunksInShard;
+        var->chunksize_in_shard = chunksizeInShard;
+    }
+
     if(jcodecs == NULL || NCJarraylength(jcodecs) == 0) {stat = NC_ENOTZARR; goto done;}
     {	/* Get endianess from the first codec */
         if ((stat = decode_endianess(jcodecs, &endianness))) goto done;

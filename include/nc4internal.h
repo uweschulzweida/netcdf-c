@@ -200,6 +200,8 @@ typedef struct NC_VAR_INFO
     int nsd;                     /**< Number of significant digits if quantization is used, 0 if not. */
     void *format_var_info;       /**< Pointer to any binary format info. */
     void* filters;             /**< Record of the list of filters to be applied to var data; format dependent */
+    int num_chunks_in_shard;
+    size_t chunksize_in_shard;
 } NC_VAR_INFO_T;
 
 /** This is a struct to handle the field metadata from a user-defined
